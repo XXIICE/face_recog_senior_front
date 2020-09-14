@@ -5,7 +5,7 @@ import json
 
 
 def capture_frame():
-    cam = cv2.VideoCapture(1)
+    cam = cv2.VideoCapture(0)
     frameNo = 0
 
     while True:
@@ -19,12 +19,12 @@ def capture_frame():
         # frame = Image.fromarray(frame)
 
         if hasFace:
-            cv2.imwrite("data/images/" + str(frameNo) + ".png", frame)
+            # cv2.imwrite("data/images/" + str(frameNo) + ".png", frame)
             print("[INFO] Face detected with frame number:", frameNo)
-            identify_face(open("data/images/" + str(frameNo) + ".png", 'rb').read())
+            # identify_face(open("data/images/" + str(frameNo) + ".png", 'rb').read())
             frameNo += 1
 
-        if cv2.waitKey(30) & 0xff == ord('`'):
+        if cv2.waitKey(30) & 0xff == ord('q'):
             break
 
     cam.release()
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     # Load models
     print("[INFO] loading model...")
     net = cv2.dnn.readNetFromCaffe(
-        "data/models/deploy.prototxt",
+        "data/models/deploy.prototxt.txt",
         "data/models/res10_300x300_ssd_iter_140000.caffemodel")
 
     capture_frame()
