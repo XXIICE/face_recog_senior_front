@@ -21,7 +21,7 @@ def capture_frame():
         if hasFace:
             cv2.imwrite("data/images/" + str(frameNo) + ".png", frame)
             print("[INFO] Face detected with frame number:", frameNo)
-            # identify_face(open("data/images/" + str(frameNo) + ".png", 'rb').read())
+            identify_face(open("data/images/" + str(frameNo) + ".png", 'rb').read())
             frameNo += 1
 
         if cv2.waitKey(30) & 0xff == ord('q'):
@@ -63,8 +63,8 @@ def draw_face_box():
     pass
 
 
-# def identify_face(image):
-def identify_face():
+def identify_face(image):
+# def identify_face():
     # ENDPOINT = "http://0.0.0.0:5001/"
     # response = httpx.post(url=ENDPOINT, data=open("data/images/sample/S__5144578.jpg"))
     # print(response.text)
@@ -72,8 +72,11 @@ def identify_face():
 
     url = "http://localhost:8002/api/v1/face/identify"
 
+    # payload = {
+    #     'file': ('filename.png', open("data/images/0.png", 'rb').read(), 'multipart/form-data')
+    # }
     payload = {
-        'file': ('filename.png', open("data/images/0.png", 'rb').read(), 'multipart/form-data')
+        'file': ('filename.png', image, 'multipart/form-data')
     }
     # payload = image
     headers = {
@@ -87,14 +90,14 @@ def identify_face():
 
 if __name__ == "__main__":
     # Load models
-    # print("[INFO] loading model...")
-    # net = cv2.dnn.readNetFromCaffe(
-    #     "data/models/deploy.prototxt.txt",
-    #     "data/models/res10_300x300_ssd_iter_140000.caffemodel")
+    print("[INFO] loading model...")
+    net = cv2.dnn.readNetFromCaffe(
+        "data/models/deploy.prototxt.txt",
+        "data/models/res10_300x300_ssd_iter_140000.caffemodel")
 
-    # capture_frame()
+    capture_frame()
 
-    identify_face()
+    # identify_face()
 
     # frameNo = 0
     # cv2.imwrite("data/images/" + str(frameNo) + ".png", cv2.imread("data/images/sample/S__5144578.jpg"))
