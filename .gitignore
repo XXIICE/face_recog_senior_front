@@ -16,3 +16,6 @@ venv/
 #ENV Variable
 scripts/
 .ENV
+
+#Image Data
+data/images
