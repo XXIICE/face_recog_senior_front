@@ -8,7 +8,7 @@ def capture_frame():
     cam = cv2.VideoCapture(1)
     frameNo = 0
 
-    while True:
+    while cam.isOpened():
         hasNextFrame, frame = cam.read()
         cv2.imshow('Frame', frame)
 
