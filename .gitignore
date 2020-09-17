@@ -18,4 +18,4 @@ scripts/
 .ENV
 
 #Image Data
-data/images/*
+data/*.png
