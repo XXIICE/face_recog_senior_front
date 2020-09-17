@@ -5,7 +5,7 @@ import requests
 
 
 def capture_frame():
-    cam = cv2.VideoCapture(1)
+    cam = cv2.VideoCapture(0)
     frameNo = 0
 
     while cam.isOpened():
@@ -16,9 +16,9 @@ def capture_frame():
         print(confidences)
 
         if hasFace:
-            cv2.imwrite("data/" + str(frameNo) + ".png", frame)
+            cv2.imwrite("data/images/section_morning/" + str(frameNo) + ".png", frame)
             print("[INFO] Face detected with frame number:", frameNo)
-            # identify_face(open("data/" + str(frameNo) + ".png", 'rb').read())
+            # identify_face(open("data/images/section_morning/" + str(frameNo) + ".png", 'rb').read())
             frameNo += 1
 
         if cv2.waitKey(30) & 0xff == ord('q'):
