@@ -1,11 +1,12 @@
-import cv2
 import json
+import cv2
 import requests
 # from PIL import Image
 
 
-def capture_frame():
-    cam = cv2.VideoCapture(1)
+def capture_frame(sec_period):
+# def capture_frame():
+    cam = cv2.VideoCapture(0)
     frameNo = 0
 
     while cam.isOpened():
@@ -13,12 +14,12 @@ def capture_frame():
         cv2.imshow('Frame', frame)
 
         hasFace, confidences = detect_face(frame)
-        print(confidences)
 
         if hasFace:
-            cv2.imwrite("data/images/section_morning/" + str(frameNo) + ".png", frame)
             print("[INFO] Face detected with frame number:", frameNo)
-            # identify_face(open("data/images/section_morning/" + str(frameNo) + ".png", 'rb').read())
+            print(confidences)
+            cv2.imwrite("data/images/section_" + sec_period + "/" + str(frameNo) + ".png", frame)
+            # identify_face(open("data/images/section_" + sec_period + "/" + str(frameNo) + ".png", 'rb').read())
             frameNo += 1
 
         if cv2.waitKey(30) & 0xff == ord('q'):
@@ -72,6 +73,11 @@ def identify_face(image):
     print(response.text.encode('utf8'))
 
 
+def is_valid_section(section):
+    sec = section.strip().lower()
+    return sec == 'morning' or sec == 'afternoon'
+
+
 if __name__ == "__main__":
     # Load models
     print("[INFO] loading model...")
@@ -79,6 +85,13 @@ if __name__ == "__main__":
         "data/models/deploy.prototxt.txt",
         "data/models/res10_300x300_ssd_iter_140000.caffemodel")
 
-    capture_frame()
+    section = input("Section (morning/afternoon)? ")
+    if(is_valid_section(section)):
+        print("[INFO] Section {} started capturing...".format(section))
+        capture_frame(section)
+    else:
+        print("[INFO] Invalid section")
+
+    # capture_frame()
 
     # identify_face()
