@@ -6,7 +6,7 @@ import requests
 
 def capture_frame(sec_period):
 # def capture_frame():
-    cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(1)
     frameNo = 0
 
     while cam.isOpened():
