@@ -11,9 +11,11 @@ def capture_frame(sec_period):
 
     while cam.isOpened():
         hasNextFrame, frame = cam.read()
-        cv2.imshow('Frame', frame)
-
-        hasFace, confidences = detect_face(frame)
+        if(hasNextFrame):
+            cv2.imshow('Frame', frame)
+            hasFace, confidences = detect_face(frame)
+        else:
+            break
 
         if hasFace:
             print("[INFO] Face detected with frame number:", frameNo)
@@ -49,7 +51,7 @@ def detect_face(image):
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
 
-        if confidence > 0.6:
+        if confidence > 0.8:
             # print(confidence * 100)
             confidences.append(confidence)
             hasFace = True
