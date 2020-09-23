@@ -20,8 +20,8 @@ def capture_frame(sec_period):
         if hasFace:
             print("[INFO] Face detected with frame number:", frameNo)
             print(confidences)
-            cv2.imwrite("data/images/section_" + sec_period + "/" + str(frameNo) + ".png", frame)
-            # identify_face(open("data/images/section_" + sec_period + "/" + str(frameNo) + ".png", 'rb').read())
+            cv2.imwrite("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", frame)
+            # identify_face(open("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", 'rb').read())
             frameNo += 1
 
         if cv2.waitKey(30) & 0xff == ord('q'):
@@ -64,9 +64,9 @@ def draw_face_box():
 
 
 def identify_face(image):
-    url = "http://localhost:8002/api/v1/face/identify"
+    url = "http://frrsca-backend.khanysorn.me/api/v1/face/recognition/identify"
     payload = {
-        'file': ('filename.png', image, 'multipart/form-data')
+        'file': ('filename.jpg', image, 'multipart/form-data')
     }
     headers = {
         'Content-Type': 'multipart/form-data'
