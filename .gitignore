@@ -19,3 +19,4 @@ scripts/
 
 #Image Data
 data/images/*/*.png
+data/images/*/*.jpg
