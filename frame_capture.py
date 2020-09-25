@@ -1,7 +1,8 @@
 import json
+from datetime import datetime
+
 import cv2
 import requests
-# from PIL import Image
 
 
 def capture_frame(sec_period):
@@ -21,7 +22,7 @@ def capture_frame(sec_period):
             print("[INFO] Face detected with frame number:", frameNo)
             print(confidences)
             cv2.imwrite("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", frame)
-            # identify_face(open("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", 'rb').read())
+            identify_face(open("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", 'rb').read())
             frameNo += 1
 
         if cv2.waitKey(30) & 0xff == ord('q'):
@@ -64,14 +65,19 @@ def draw_face_box():
 
 
 def identify_face(image):
-    url = "http://frrsca-backend.khanysorn.me/api/v1/face/recognition/identify"
+    url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_student"
+    # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_student"
+    room = "TRAINING1-2"
+    course_code = "INT450"
+    section_number = "1"
+    timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    path = url + "/" + room + "/" + course_code + "/" + section_number + "/" + timestamp
+
     payload = {
-        'file': ('filename.jpg', image, 'multipart/form-data')
+        'image': ('image.jpg', image, 'multipart/form-data')
     }
-    headers = {
-        'Content-Type': 'multipart/form-data'
-    }
-    response = requests.post(url, files=payload)
+
+    response = requests.post(path, files=payload)
     print(response.text.encode('utf8'))
 
 
@@ -86,6 +92,7 @@ if __name__ == "__main__":
     net = cv2.dnn.readNetFromCaffe(
         "data/models/deploy.prototxt.txt",
         "data/models/res10_300x300_ssd_iter_140000.caffemodel")
+    print("[INFO] model loaded.")
 
     section = input("Section (morning/afternoon)? ")
     if(is_valid_section(section)):
@@ -96,4 +103,6 @@ if __name__ == "__main__":
 
     # capture_frame()
 
-    # identify_face()
+    # identify_face(open("data/images/section_morning/55.jpg", 'rb').read())
+    # success, encoded_image = cv2.imencode('.jpg', frame)
+    # await identify_face(encoded_image)
