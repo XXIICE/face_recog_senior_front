@@ -86,11 +86,11 @@ async def identify_face(image):
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8002/api/v1/face/recognition/identify"
-    room = "CB2301"
-    course_code = "INT402"
+    room = "CB2312"
+    course_code = "INT450"
     section_number = "1"
-    timestamp = "2020-09-24 13:30:00"
-    # timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    # timestamp = "2020-09-28 13:30:00"
+    timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
     path = url + "/" + room + "/" + course_code + "/" + section_number + "/" + timestamp
 
     payload = {
