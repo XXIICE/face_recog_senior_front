@@ -1,24 +1,45 @@
 import json
 import trio
 from datetime import datetime
+import time
 
 import cv2
 import PySimpleGUI as gui
 import requests
 
+
 student_list = {}
-# Load models
+
+# Room is fixed.
+room = "CB2312"
+
+# # Required query
+# course_code = "INT450"
+# section_number = "1"
+# start_time = None
+# end_time = None
+
+# Loading models
 print("[INFO] loading model...")
 net = cv2.dnn.readNetFromCaffe(
     "data/models/deploy.prototxt.txt",
     "data/models/res10_300x300_ssd_iter_140000.caffemodel")
 print("[INFO] model loaded.")
 
-cam = cv2.VideoCapture(1)
+# Finding camera
+n = 0
+cam = cv2.VideoCapture()
 
-# def capture_frame(sec_period):
+while n != 3 and not cam.isOpened():
+    cam.open(n)
+    print(cam.isOpened())
+    if cam.isOpened():
+        break
+    else:
+        n += 1
+
+
 async def capture_frame():
-    # cam = cv2.VideoCapture(1)
     frameNo = 0
 
     while cam.isOpened():
@@ -39,15 +60,8 @@ async def capture_frame():
             # identify_face(open("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", 'rb').read())
             frameNo += 1
 
-        if cv2.waitKey(30) & 0xff == ord('`'):
-            break
-
         await trio.sleep(0)
         print(f"Exit at {datetime.now()}")
-
-    # cam.release()
-    # cv2.destroyAllWindows()
-
 
 def detect_face(image):
     hasFace = False
@@ -64,42 +78,30 @@ def detect_face(image):
     net.setInput(blob)
     detections = net.forward()
     confidences = []
-    # print(detections)
 
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
 
         if confidence > 0.8:
-            # print(confidence * 100)
             confidences.append(confidence)
             hasFace = True
 
     return (hasFace, confidences)
-
-
-def draw_face_box():
-    pass
-
 
 async def identify_face(image):
     print(f"Enter {identify_face=} function at {datetime.now()}.")
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8002/api/v1/face/recognition/identify"
-    room = "CB2312"
     course_code = "INT450"
     section_number = "1"
-    # timestamp = "2020-09-28 13:30:00"
+    # timestamp = "2020-01-30 13:30:00"
     timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
     path = url + "/" + room + "/" + course_code + "/" + section_number + "/" + timestamp
 
     payload = {
         'image': ('image.jpg', image, 'image/jpeg')
     }
-
-    # payload = {
-    #     'file': ('image.jpg', image, 'image/jpeg')
-    # }
 
     # response = requests.post(url, files=payload)
     response = requests.post(path, files=payload)
@@ -120,7 +122,6 @@ async def identify_face(image):
     # print(response.text.encode('utf8'))
     await trio.sleep(3)
     print(f"Exit at {datetime.now()}")
-
 
 async def main():     
     student_list_column = [
@@ -149,10 +150,6 @@ async def main():
 
     window = gui.Window(title="Hello CB2301", layout = layout, margins=(200, 100))
 
-    # cam = cv2.VideoCapture(1)
-    # frameNo = 0
-
-
     while True:
         event, values = window.read(timeout=1000)
 
@@ -161,20 +158,6 @@ async def main():
         
         window["-DATETIME-"].update(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         window["-STUDENT LIST-"].update(student_list)
-
-        # hasNextFrame, frame = cam.read()
-        # if(hasNextFrame):
-        #     # cv2.imshow('Frame', frame)
-        #     hasFace, confidences = detect_face(frame)
-        # else:
-        #     break
-
-        # if hasFace:
-        #     print("[INFO] Face detected with frame number:", frameNo)
-        #     print(confidences)
-        #     success, encoded_image = cv2.imencode('.jpg', frame)
-        #     await identify_face(encoded_image)
-        #     frameNo += 1
 
         await trio.sleep(0)
 
@@ -187,59 +170,36 @@ async def main():
 #     await trio.sleep(5)
 #     print(f"Exit at {datetime.now()}")
 
+async def check_present_student():
+    pass
+
+async def check_absent_student():
+    pass
+
+def check_timetable():
+    # url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/timetable/check"
+    url = "http://0.0.0.0:8001/api/v1/class/attendance/timetable/check"
+    current_datetime = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    path = url + '/' + room + '/' + current_datetime
+    response = requests.post(path)
+
+    if response.ok:
+        result = response.json()
+        return True
+    else:
+        return False
+
 async def parent() -> None:
     async with trio.open_nursery() as nursery:
         nursery.start_soon(main)
         nursery.start_soon(capture_frame)
-        # nursery.start_soon(
-        #     identify_face, 
-        #     open("/Users/iMac/Documents/images/Group/60130500008_Test_2.jpeg", 'rb').read()
-        # )
-        # nursery.start_soon(
-        #     identify_face, 
-        #     open("/Users/iMac/Documents/images/Group/60130500138_20.png", 'rb').read()
-        # )
-        # nursery.start_soon(
-        #     identify_face, 
-        #     open("/Users/iMac/Documents/images/Group/60130500008_Test_2.jpeg", 'rb').read()
-        # )
         print(f"{parent=} here.")
     print(f"{parent=} exit.")
 
-trio.run(parent)
-
-
-# def is_valid_section(section):
-#     sec = section.strip().lower()
-#     return sec == 'morning' or sec == 'afternoon'
-
-
-# async def main():
-#     await show_student_list()
-#     await identify_face(open("/Users/iMac/Documents/images/Group/60130500008_Test_2.jpeg", 'rb').read())
-#     await identify_face(open("/Users/iMac/Documents/images/Group/60130500138_20.png", 'rb').read())
-#     await identify_face(open("/Users/iMac/Documents/images/Group/60130500008_Test_2.jpeg", 'rb').read())
-
-
-# asyncio.run(main())
+if cam.isOpened():
+    trio.run(parent)
+else:
+    print("Unable to open camera.")
 
 # if __name__ == "__main__":
-#     # Load models
-#     print("[INFO] loading model...")
-#     net = cv2.dnn.readNetFromCaffe(
-#         "data/models/deploy.prototxt.txt",
-#         "data/models/res10_300x300_ssd_iter_140000.caffemodel")
-#     print("[INFO] model loaded.")
-
-    # section = input("Section (morning/afternoon)? ")
-    # if(is_valid_section(section)):
-        # print("[INFO] Section {} started capturing...".format(section))
-        # capture_frame(section)
-    # else:
-    #     print("[INFO] Invalid section")
-
-    # capture_frame()
-
-    # identify_face(open("/Users/iMac/Documents/images/Group/60130500008_Test_2.jpeg", 'rb').read())
-    # identify_face(open("/Users/iMac/Documents/images/Group/60130500138_20.png", 'rb').read())
-    # identify_face(open("/Users/iMac/Documents/images/Group/60130500008_Test_2.jpeg", 'rb').read())
+#     check_timetable()
