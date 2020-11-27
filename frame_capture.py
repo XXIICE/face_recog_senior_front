@@ -88,7 +88,7 @@ async def identify_face(image):
     # section_name = "1"
     # timestamp = "2020-01-30 13:30:00"
     timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
-    path = url + "/" + room + "/" + course_code + "/" + section_name + "/" + timestamp
+    path = url + "/" + course_code + "/" + section_name + "/" + timestamp
 
     payload = {
         'image': ('image.jpg', image, 'image/jpeg')
