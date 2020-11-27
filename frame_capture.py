@@ -1,7 +1,6 @@
 import json
 import trio
 from datetime import datetime
-import time
 
 import cv2
 import PySimpleGUI as gui
@@ -27,16 +26,8 @@ net = cv2.dnn.readNetFromCaffe(
 print("[INFO] model loaded.")
 
 # Finding camera
-n = 0
-cam = cv2.VideoCapture()
-
-while n != 3 and not cam.isOpened():
-    cam.open(n)
-    print(cam.isOpened())
-    if cam.isOpened():
-        break
-    else:
-        n += 1
+camera_index = input("Specify camera driver index (starting from 0): ")
+cam = cv2.VideoCapture(int(camera_index))
 
 
 async def capture_frame():
