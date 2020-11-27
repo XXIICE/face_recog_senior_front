@@ -1,6 +1,7 @@
 import json
 import trio
 from datetime import datetime
+import time
 
 import cv2
 import PySimpleGUI as gui
@@ -13,10 +14,9 @@ student_list = {}
 room = "CB2312"
 
 # # Required query
-# course_code = "INT450"
-# section_number = "1"
-# start_time = None
-# end_time = None
+course_code = ""
+section_name = ""
+class_timeend = None
 
 # Loading models
 print("[INFO] loading model...")
@@ -156,29 +156,63 @@ async def main():
     cv2.destroyAllWindows()
     window.close()
 
-# async def func() -> None:
-#     print(f"Enter {func=} function at {datetime.now()}.")
-#     await trio.sleep(5)
-#     print(f"Exit at {datetime.now()}")
-
 async def check_present_student():
     pass
 
 async def check_absent_student():
+    print("Checking absent students is complete.")
     pass
 
-def check_timetable():
+async def check_timetable():
+    '''
+        # 1. query course_code, section_number, class_timeend (if time_end > current_time)
+        # 2. countdown to class_time_end
+        # 3. check_absent_student
+        # Redo
+    '''
+    global course_code
+    global section_name
+    global class_timeend
+    
     # url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/timetable/check"
     url = "http://0.0.0.0:8001/api/v1/class/attendance/timetable/check"
     current_datetime = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    # print(current_datetime)
+    # current_datetime = "2020-11-30 11:59:30"
     path = url + '/' + room + '/' + current_datetime
     response = requests.post(path)
+    print(response.json())
 
-    if response.ok:
-        result = response.json()
-        return True
+    if response.ok and response.json():
+        class_result = response.json()
+        print(class_result)
+
+        course_code = class_result['course_code']
+        section_name = str(class_result['section_name'])
+        class_timeend = datetime.strptime(class_result['class_timeend'], '%Y-%m-%dT%H:%M:%S')
+    
+        # print(course_code)
+        # print(section_name)
+        # print(class_timeend)
+
+        current_time = datetime.strptime(current_datetime, "%Y-%m-%d %H:%M:%S")
+        current_seconds = (current_time.hour * 60 * 60) + (current_time.minute * 60) + (current_time.second)
+        print(current_seconds)
+    
+        # global check_timetable_schedule
+        # deadline_seconds = (check_timetable_schedule.hour * 60 * 60) + (check_timetable_schedule.minute * 60) + (check_timetable_schedule.second)
+        deadline_seconds = (class_timeend.hour * 60 * 60) + (class_timeend.minute * 60) + (class_timeend.second)
+        print(deadline_seconds)
+
+        sleep_seconds = (deadline_seconds - current_seconds) + 1
+        print("current - deadline = ", sleep_seconds)
+
+        await trio.sleep(sleep_seconds)
+        await check_absent_student()
+        await check_timetable()
+
     else:
-        return False
+        print("End process ...")
 
 async def parent() -> None:
     async with trio.open_nursery() as nursery:
@@ -191,6 +225,3 @@ if cam.isOpened():
     trio.run(parent)
 else:
     print("Unable to open camera.")
-
-# if __name__ == "__main__":
-#     check_timetable()
