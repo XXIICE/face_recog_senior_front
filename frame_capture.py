@@ -84,11 +84,11 @@ async def identify_face(image):
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8002/api/v1/face/recognition/identify"
-    course_code = "INT450"
-    section_number = "1"
+    # course_code = "INT450"
+    # section_name = "1"
     # timestamp = "2020-01-30 13:30:00"
     timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
-    path = url + "/" + room + "/" + course_code + "/" + section_number + "/" + timestamp
+    path = url + "/" + room + "/" + course_code + "/" + section_name + "/" + timestamp
 
     payload = {
         'image': ('image.jpg', image, 'image/jpeg')
@@ -117,7 +117,7 @@ async def identify_face(image):
 async def main():     
     student_list_column = [
         [
-            gui.Text("INT402", font='Courier 16')
+            gui.Text("Course", font='Courier 16', key = "-COURSECODE-")
         ],
         [
             gui.Text(text = datetime.now().strftime("%Y-%m-%d %H:%M:%S"), key = "-DATETIME-", font='Courier 16')
@@ -147,6 +147,7 @@ async def main():
         if event == "EXIT" or event == gui.WIN_CLOSED:
             break
         
+        window["-COURSECODE-"].update(course_code)
         window["-DATETIME-"].update(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         window["-STUDENT LIST-"].update(student_list)
 
@@ -217,6 +218,7 @@ async def check_timetable():
 async def parent() -> None:
     async with trio.open_nursery() as nursery:
         nursery.start_soon(main)
+        nursery.start_soon(check_timetable)
         nursery.start_soon(capture_frame)
         print(f"{parent=} here.")
     print(f"{parent=} exit.")
