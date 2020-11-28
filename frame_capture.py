@@ -16,6 +16,7 @@ room = "CB2312"
 # # Required query
 course_code = ""
 section_name = ""
+section_id = ""
 class_timeend = None
 
 # Loading models
@@ -34,7 +35,6 @@ async def capture_frame():
     frameNo = 0
 
     while cam.isOpened():
-        print(f"Enter {capture_frame=} function at {datetime.now()}.")
         hasNextFrame, frame = cam.read()
         if(hasNextFrame):
             # cv2.imshow('Frame', frame)
@@ -52,7 +52,6 @@ async def capture_frame():
             frameNo += 1
 
         await trio.sleep(0)
-        print(f"Exit at {datetime.now()}")
 
 def detect_face(image):
     hasFace = False
@@ -83,18 +82,17 @@ async def identify_face(image):
     print(f"Enter {identify_face=} function at {datetime.now()}.")
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_student"
-    # url = "http://0.0.0.0:8002/api/v1/face/recognition/identify"
     # course_code = "INT450"
     # section_name = "1"
-    # timestamp = "2020-01-30 13:30:00"
+    # section_id = "6"
+    # timestamp = "2020-11-30 09:30:00"
     timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
-    path = url + "/" + course_code + "/" + section_name + "/" + timestamp
+    path = url + "/" + course_code + "/" + section_name + "/" + section_id + "/" + timestamp
 
     payload = {
         'image': ('image.jpg', image, 'image/jpeg')
     }
 
-    # response = requests.post(url, files=payload)
     response = requests.post(path, files=payload)
 
     if response.ok:
@@ -103,14 +101,13 @@ async def identify_face(image):
         if len(result) > 0:
             for student in result:
                 student_id = student['student_id']
-                # student_id = student['person_id']
                 print(student_id)
 
                 if student_id not in student_list:
                     student_list[student_id] = student
             
-            print(json.dumps(student_list, indent=2))
-    # print(response.text.encode('utf8'))
+            # print(json.dumps(student_list, indent=2))
+    
     await trio.sleep(3)
     print(f"Exit at {datetime.now()}")
 
@@ -161,8 +158,20 @@ async def check_present_student():
     pass
 
 async def check_absent_student():
+    # url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_absent_student"
+    # timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+
+    # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_absent_student"
+    # course_code = "INT450"
+    # section_id = "1"
+    # timestamp = "2020-01-30 13:30:00"
+
+    # path = url + "/" + course_code + "/" + section_id + "/" + timestamp
+    # response = requests.post(path)
+
+    # print(response)
+
     print("Checking absent students is complete.")
-    pass
 
 async def check_timetable():
     '''
@@ -173,16 +182,15 @@ async def check_timetable():
     '''
     global course_code
     global section_name
+    global section_id
     global class_timeend
     
-    # url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/timetable/check"
-    url = "http://0.0.0.0:8001/api/v1/class/attendance/timetable/check"
+    url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/timetable/check"
+    # url = "http://0.0.0.0:8001/api/v1/class/attendance/timetable/check"
     current_datetime = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
-    # print(current_datetime)
     # current_datetime = "2020-11-30 11:59:30"
     path = url + '/' + room + '/' + current_datetime
     response = requests.post(path)
-    print(response.json())
 
     if response.ok and response.json():
         class_result = response.json()
@@ -190,23 +198,15 @@ async def check_timetable():
 
         course_code = class_result['course_code']
         section_name = str(class_result['section_name'])
+        section_id = str(class_result['section_id'])
         class_timeend = datetime.strptime(class_result['class_timeend'], '%Y-%m-%dT%H:%M:%S')
-    
-        # print(course_code)
-        # print(section_name)
-        # print(class_timeend)
 
         current_time = datetime.strptime(current_datetime, "%Y-%m-%d %H:%M:%S")
         current_seconds = (current_time.hour * 60 * 60) + (current_time.minute * 60) + (current_time.second)
-        print(current_seconds)
     
-        # global check_timetable_schedule
-        # deadline_seconds = (check_timetable_schedule.hour * 60 * 60) + (check_timetable_schedule.minute * 60) + (check_timetable_schedule.second)
         deadline_seconds = (class_timeend.hour * 60 * 60) + (class_timeend.minute * 60) + (class_timeend.second)
-        print(deadline_seconds)
 
         sleep_seconds = (deadline_seconds - current_seconds) + 1
-        print("current - deadline = ", sleep_seconds)
 
         await trio.sleep(sleep_seconds)
         await check_absent_student()
@@ -220,8 +220,6 @@ async def parent() -> None:
         nursery.start_soon(main)
         nursery.start_soon(check_timetable)
         nursery.start_soon(capture_frame)
-        print(f"{parent=} here.")
-    print(f"{parent=} exit.")
 
 if cam.isOpened():
     trio.run(parent)
