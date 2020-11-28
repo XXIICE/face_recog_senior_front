@@ -37,18 +37,14 @@ async def capture_frame():
     while cam.isOpened():
         hasNextFrame, frame = cam.read()
         if(hasNextFrame):
-            # cv2.imshow('Frame', frame)
             hasFace, confidences = detect_face(frame)
         else:
             break
 
         if hasFace:
-            print("[INFO] Face detected with frame number:", frameNo)
-            print(confidences)
+            print("[INFO] Face detected with frame number:", frameNo, confidences)
             success, encoded_image = cv2.imencode('.jpg', frame)
             await identify_face(encoded_image)
-            # cv2.imwrite("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", frame)
-            # identify_face(open("data/images/section_" + sec_period + "/" + str(frameNo) + ".jpg", 'rb').read())
             frameNo += 1
 
         await trio.sleep(0)
@@ -79,13 +75,8 @@ def detect_face(image):
     return (hasFace, confidences)
 
 async def identify_face(image):
-    print(f"Enter {identify_face=} function at {datetime.now()}.")
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_student"
-    # course_code = "INT450"
-    # section_name = "1"
-    # section_id = "6"
-    # timestamp = "2020-11-30 09:30:00"
     timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
     path = url + "/" + course_code + "/" + section_name + "/" + section_id + "/" + timestamp
 
@@ -105,11 +96,8 @@ async def identify_face(image):
 
                 if student_id not in student_list:
                     student_list[student_id] = student
-            
-            # print(json.dumps(student_list, indent=2))
-    
+        
     await trio.sleep(3)
-    print(f"Exit at {datetime.now()}")
 
 async def main():     
     student_list_column = [
@@ -136,7 +124,7 @@ async def main():
         ]
     ]
 
-    window = gui.Window(title="Hello CB2301", layout = layout, margins=(200, 100))
+    window = gui.Window(title="FRRSCA | " + room, layout = layout, margins=(200, 100))
 
     while True:
         event, values = window.read(timeout=1000)
@@ -154,24 +142,15 @@ async def main():
     cv2.destroyAllWindows()
     window.close()
 
-async def check_present_student():
-    pass
-
 async def check_absent_student():
-    # url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_absent_student"
-    # timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
-
+    url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_absent_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_absent_student"
-    # course_code = "INT450"
-    # section_id = "1"
-    # timestamp = "2020-01-30 13:30:00"
+    timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    path = url + "/" + section_id + "/" + timestamp
+    
+    requests.post(path)
 
-    # path = url + "/" + course_code + "/" + section_id + "/" + timestamp
-    # response = requests.post(path)
-
-    # print(response)
-
-    print("Checking absent students is complete.")
+    print("[INFO] Checking absent student completed.")
 
 async def check_timetable():
     '''
@@ -188,8 +167,8 @@ async def check_timetable():
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/timetable/check"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/timetable/check"
     current_datetime = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
-    # current_datetime = "2020-11-30 11:59:30"
     path = url + '/' + room + '/' + current_datetime
+    
     response = requests.post(path)
 
     if response.ok and response.json():
