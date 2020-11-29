@@ -172,6 +172,7 @@ async def check_timetable():
     response = requests.post(path)
 
     if response.ok and response.json():
+        student_list.clear()
         class_result = response.json()
         print(class_result)
 
