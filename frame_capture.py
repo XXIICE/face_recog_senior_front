@@ -76,7 +76,7 @@ def detect_face(image):
 async def identify_face(image):
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_student"
-    timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     path = url + "/" + course_code + "/" + section_name + "/" + section_id + "/" + timestamp
 
     payload = {
@@ -144,7 +144,7 @@ async def main():
 async def check_absent_student():
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/check_absent_student"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/check_absent_student"
-    timestamp = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     path = url + "/" + section_id + "/" + timestamp
     
     requests.post(path)
@@ -165,7 +165,7 @@ async def check_timetable():
     
     url = "https://frrsca-backend.khanysorn.me/api/v1/class/attendance/timetable/check"
     # url = "http://0.0.0.0:8001/api/v1/class/attendance/timetable/check"
-    current_datetime = datetime.now().strftime("%Y-%m-%d% %H:%M:%S")
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     path = url + '/' + room + '/' + current_datetime
     
     response = requests.post(path)
